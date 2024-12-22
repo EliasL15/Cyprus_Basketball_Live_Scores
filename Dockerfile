@@ -4,8 +4,7 @@ FROM python:3.11-slim
 # Install required system dependencies
 RUN apt-get update && apt-get install -y \
     libgstreamer-gl1.0-0 \
-    libgstreamer-plugins-bad1.0-0 \
-    libgstcodecparsers-1.0-0 \
+    gstreamer1.0-plugins-bad \
     libavif15 \
     libenchant-2-2 \
     libsecret-1-0 \
