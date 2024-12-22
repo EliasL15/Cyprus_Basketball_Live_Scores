@@ -1,0 +1,18 @@
+{
+    "builds": [
+      {
+        "src": "app.py",
+        "use": "@vercel/python",
+        "config": {
+          "installCommand": "pip install -r requirements.txt && playwright install",
+          "buildCommand": "gunicorn app:app"
+        }
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "app.py"
+      }
+    ]
+  }
