@@ -76,20 +76,25 @@
     <div id="loading" class="loading">Loading... 0%</div>
     <div id="live-scores"></div>
     <script>
+        let firstLoad = true;
+
         async function fetchLiveScores() {
             const loadingDiv = document.getElementById('loading');
             const liveScoresDiv = document.getElementById('live-scores');
-            loadingDiv.style.display = 'block';
-            liveScoresDiv.style.display = 'none';
 
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 1;
-                loadingDiv.textContent = `Loading... ${progress}%`;
-                if (progress >= 100) {
-                    clearInterval(interval);
-                }
-            }, 180); // 180ms * 100 = 18000ms (18 seconds)
+            if (firstLoad) {
+                loadingDiv.style.display = 'block';
+                liveScoresDiv.style.display = 'none';
+
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 1;
+                    loadingDiv.textContent = `Loading... ${progress}%`;
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                    }
+                }, 180); // 180ms * 100 = 18000ms (18 seconds)
+            }
 
             try {
                 const response = await fetch('/api/live-scores');
@@ -125,9 +130,11 @@
                 console.error('Failed to fetch live scores:', error);
                 setTimeout(fetchLiveScores, 5000); // Retry after 5 seconds
             } finally {
-                clearInterval(interval);
-                loadingDiv.style.display = 'none';
-                liveScoresDiv.style.display = 'block';
+                if (firstLoad) {
+                    firstLoad = false;
+                    loadingDiv.style.display = 'none';
+                    liveScoresDiv.style.display = 'block';
+                }
             }
         }
 
