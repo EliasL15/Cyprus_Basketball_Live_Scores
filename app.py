@@ -1,8 +1,10 @@
 from flask import Flask, render_template, jsonify
+from flask_caching import Cache
 from playwright.sync_api import sync_playwright
 import re
 
 app = Flask(__name__)
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 def scrape_dynamic_content():
     live_games = []
@@ -50,9 +52,10 @@ def index():
     return render_template('index.html')
 
 @app.route('/api/live-scores')
+@cache.cached(timeout=60)
 def live_scores():
     live_games = scrape_dynamic_content()
     return jsonify(live_games)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

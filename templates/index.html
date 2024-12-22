@@ -70,37 +70,45 @@
     <div id="live-scores"></div>
     <script>
         async function fetchLiveScores() {
-            const response = await fetch('/api/live-scores');
-            const liveGames = await response.json();
-            const liveScoresDiv = document.getElementById('live-scores');
-            liveScoresDiv.innerHTML = '';
-            liveGames.forEach(game => {
-                const gameDiv = document.createElement('div');
-                gameDiv.className = 'game';
-                gameDiv.innerHTML = `
-                    <a href="${game.url}" target="_blank">
-                        <div class="team">
-                            <span class="team-name">${game.team_a_name}</span>
-                            <span class="team-score">${game.team_a_score}</span>
-                        </div>
-                        <div class="team">
-                            <span class="team-name">${game.team_b_name}</span>
-                            <span class="team-score">${game.team_b_score}</span>
-                        </div>
-                        <div class="quarter-time">
-                            ${game.quarter} - ${game.time_left}
-                        </div>
-                        <div class="game-info">
-                            Click to view more details
-                        </div>
-                    </a>
-                `;
-                liveScoresDiv.appendChild(gameDiv);
-            });
+            try {
+                const response = await fetch('/api/live-scores');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const liveGames = await response.json();
+                const liveScoresDiv = document.getElementById('live-scores');
+                liveScoresDiv.innerHTML = '';
+                liveGames.forEach(game => {
+                    const gameDiv = document.createElement('div');
+                    gameDiv.className = 'game';
+                    gameDiv.innerHTML = `
+                        <a href="${game.url}" target="_blank">
+                            <div class="team">
+                                <span class="team-name">${game.team_a_name}</span>
+                                <span class="team-score">${game.team_a_score}</span>
+                            </div>
+                            <div class="team">
+                                <span class="team-name">${game.team_b_name}</span>
+                                <span class="team-score">${game.team_b_score}</span>
+                            </div>
+                            <div class="quarter-time">
+                                ${game.quarter} - ${game.time_left}
+                            </div>
+                            <div class="game-info">
+                                Click to view more details
+                            </div>
+                        </a>
+                    `;
+                    liveScoresDiv.appendChild(gameDiv);
+                });
+            } catch (error) {
+                console.error('Failed to fetch live scores:', error);
+                setTimeout(fetchLiveScores, 5000); // Retry after 5 seconds
+            }
         }
 
-        // Fetch live scores every 60 seconds
-        setInterval(fetchLiveScores, 60000);
+        // Fetch live scores every 30 seconds
+        setInterval(fetchLiveScores, 30000);
         // Initial fetch
         fetchLiveScores();
     </script>
