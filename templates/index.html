@@ -63,20 +63,40 @@
             text-decoration: none;
             color: inherit;
         }
+        .loading {
+            text-align: center;
+            font-size: 1.5em;
+            color: #0078d7;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Live Scores</h1>
+    <div id="loading" class="loading">Loading... 0%</div>
     <div id="live-scores"></div>
     <script>
         async function fetchLiveScores() {
+            const loadingDiv = document.getElementById('loading');
+            const liveScoresDiv = document.getElementById('live-scores');
+            loadingDiv.style.display = 'block';
+            liveScoresDiv.style.display = 'none';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                loadingDiv.textContent = `Loading... ${progress}%`;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 180); // 180ms * 100 = 18000ms (18 seconds)
+
             try {
                 const response = await fetch('/api/live-scores');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 const liveGames = await response.json();
-                const liveScoresDiv = document.getElementById('live-scores');
                 liveScoresDiv.innerHTML = '';
                 liveGames.forEach(game => {
                     const gameDiv = document.createElement('div');
@@ -104,6 +124,10 @@
             } catch (error) {
                 console.error('Failed to fetch live scores:', error);
                 setTimeout(fetchLiveScores, 5000); // Retry after 5 seconds
+            } finally {
+                clearInterval(interval);
+                loadingDiv.style.display = 'none';
+                liveScoresDiv.style.display = 'block';
             }
         }
 
