@@ -4,7 +4,7 @@ This project is a Flask-based web application designed to scrape and display liv
 
 ## Live Demo
 
-You can access the live application here: [Cyprus Basketball Live Scores](https://cyprus-basketball-live-scores.onrender.com/)
+You can access the live application here: [Cyprus Basketball Live Scores](https://cyprusbasketballlivescores-production.up.railway.app/)
 
 ## Features
 
