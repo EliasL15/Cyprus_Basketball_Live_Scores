@@ -1,16 +1,12 @@
 import os
-from flask import Flask, render_template, jsonify
-from flask_caching import Cache
 from playwright.sync_api import sync_playwright
 import re
 from datetime import datetime
 from flask_apscheduler import APScheduler
 import logging
+import time
 
-app = Flask(__name__)
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
-scheduler = APScheduler()
-scheduler.init_app(app)
+scraped_data = {}
 
 logging.basicConfig(level=logging.INFO)
 
@@ -88,35 +84,17 @@ def scrape_dynamic_content():
     }
 
 def scheduled_scrape():
+    global scraped_data
     logging.info("Starting scheduled scrape")
     new_data = scrape_dynamic_content()
-    cache.set('scraped_data', new_data)
-    logging.info(f"Scheduled scrape completed. Data: {new_data}")
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/api/games')
-def get_games():
-    scraped_data = cache.get('scraped_data')
-    if not scraped_data:
-        logging.info("Cache miss, scraping data")
-        scraped_data = scrape_dynamic_content()
-        cache.set('scraped_data', scraped_data)
-    else:
-        logging.info("Cache hit, returning cached data")
-    return jsonify(scraped_data)
-
-def initialize_scheduler():
-    scheduler.start()
-    scheduler.add_job(id='ScrapeJob', func=scheduled_scrape, trigger='interval', minutes=2)
-    logging.info("Scheduler initialized and job added")
-
-if __name__ != '__main__':
-    initialize_scheduler()
+    scraped_data.update(new_data)
+    logging.info(f"Scheduled scrape completed. Data: {scraped_data}")
 
 if __name__ == '__main__':
-    initialize_scheduler()
-    port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
+    scheduler = APScheduler()
+    scheduler.add_job(id='ScrapeJob', func=scheduled_scrape, trigger='interval', minutes=2)
+    scheduler.start()
+    logging.info("Scheduler initialized and job added")
+    scheduled_scrape()
+    while True:
+        time.sleep(1)
