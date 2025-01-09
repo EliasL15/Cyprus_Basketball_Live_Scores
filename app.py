@@ -85,6 +85,7 @@ def scrape_dynamic_content():
 
 def scheduled_scrape():
     global scraped_data
+    logging.info("Starting scheduled scrape")
     new_data = scrape_dynamic_content()
     scraped_data.update(new_data)
     logging.info(f"Scheduled scrape completed. Data: {scraped_data}")
@@ -105,6 +106,7 @@ if __name__ == '__main__':
     scheduler.add_job(id='ScrapeJob', func=scheduled_scrape, trigger='interval', minutes=2)
     
     # Run the scrape function immediately on startup
+    logging.info("Running initial scrape")
     scheduled_scrape()
     
     port = 5001
