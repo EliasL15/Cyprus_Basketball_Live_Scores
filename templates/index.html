@@ -59,6 +59,18 @@
             color: #888;
             margin-top: 10px;
         }
+        .game-date {
+            text-align: center;
+            font-size: 1em;
+            color: #555;
+            margin-top: 10px;
+        }
+        .league-name {
+            text-align: center;
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 10px;
+        }
         a {
             text-decoration: none;
             color: inherit;
@@ -85,16 +97,20 @@
     <h1>Live Scores</h1>
     <div id="loading" class="loading">Loading... 0%</div>
     <div id="live-scores"></div>
+    <h1>All Games From Current Month</h1>
+    <div id="all-games"></div>
     <script>
         let firstLoad = true;
 
         async function fetchLiveScores() {
             const loadingDiv = document.getElementById('loading');
             const liveScoresDiv = document.getElementById('live-scores');
+            const allGamesDiv = document.getElementById('all-games');
 
             if (firstLoad) {
                 loadingDiv.style.display = 'block';
                 liveScoresDiv.style.display = 'none';
+                allGamesDiv.style.display = 'none';
 
                 let progress = 0;
                 const interval = setInterval(() => {
@@ -107,17 +123,23 @@
             }
 
             try {
-                const response = await fetch('/api/live-scores');
-                if (!response.ok) {
+                const liveResponse = await fetch('/api/live-scores');
+                const allResponse = await fetch('/api/all-games');
+                if (!liveResponse.ok || !allResponse.ok) {
                     throw new Error('Network response was not ok');
                 }
-                const liveGames = await response.json();
+                const liveGames = await liveResponse.json();
+                const allGames = await allResponse.json();
+
                 liveScoresDiv.innerHTML = '';
                 liveGames.forEach(game => {
                     const gameDiv = document.createElement('div');
                     gameDiv.className = 'game';
                     gameDiv.innerHTML = `
                         <a href="${game.url}" target="_blank">
+                            <div class="league-name">
+                                ${game.league_name}
+                            </div>
                             <div class="team">
                                 <span class="team-name">${game.team_a_name}</span>
                                 <span class="team-score">${game.team_a_score}</span>
@@ -129,6 +151,9 @@
                             <div class="quarter-time">
                                 ${game.quarter} - ${game.time_left}
                             </div>
+                            <div class="game-date">
+                                ${game.date}
+                            </div>
                             <div class="game-info">
                                 Click to view more details
                             </div>
@@ -136,14 +161,46 @@
                     `;
                     liveScoresDiv.appendChild(gameDiv);
                 });
+
+                allGamesDiv.innerHTML = '';
+                allGames.forEach(game => {
+                    const gameDiv = document.createElement('div');
+                    gameDiv.className = 'game';
+                    gameDiv.innerHTML = `
+                        <a href="${game.url}" target="_blank">
+                            <div class="league-name">
+                                ${game.league_name}
+                            </div>
+                            <div class="team">
+                                <span class="team-name">${game.team_a_name}</span>
+                                <span class="team-score">${game.team_a_score}</span>
+                            </div>
+                            <div class="team">
+                                <span class="team-name">${game.team_b_name}</span>
+                                <span class="team-score">${game.team_b_score}</span>
+                            </div>
+                            <div class="quarter-time">
+                                ${game.quarter} - ${game.time_left}
+                            </div>
+                            <div class="game-date">
+                                ${game.date}
+                            </div>
+                            <div class="game-info">
+                                Click to view more details
+                            </div>
+                        </a>
+                    `;
+                    allGamesDiv.appendChild(gameDiv);
+                });
             } catch (error) {
-                console.error('Failed to fetch live scores:', error);
+                console.error('Failed to fetch scores:', error);
                 setTimeout(fetchLiveScores, 5000); // Retry after 5 seconds
             } finally {
                 if (firstLoad) {
                     firstLoad = false;
                     loadingDiv.style.display = 'none';
                     liveScoresDiv.style.display = 'block';
+                    allGamesDiv.style.display = 'block';
                 }
             }
         }
