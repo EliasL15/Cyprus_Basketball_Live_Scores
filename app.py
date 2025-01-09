@@ -111,8 +111,6 @@ def initialize_scheduler():
     logging.info("Running initial scrape")
     scheduled_scrape()
 
-if __name__ != '__main__':
-    initialize_scheduler()
 
 if __name__ == '__main__':
     initialize_scheduler()
