@@ -108,8 +108,5 @@ if __name__ == '__main__':
     # Run the scrape function immediately on startup
     logging.info("Running initial scrape")
     scheduled_scrape()
-    
-    port = 5001
-    debug = True
-    logging.info(f"Starting app on port {port} with debug={debug}")
-    app.run(debug=debug, port=port)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)
