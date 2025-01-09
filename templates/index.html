@@ -1,218 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Scores</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #eef2f7;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-        .game {
-            background-color: #ffffff;
-            padding: 20px;
-            margin: 15px auto;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s ease, transform 0.2s ease;
-            max-width: 600px;
-        }
-        .game:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-        }
-        .team {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0;
-        }
-        .team-name {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
-            text-align: left;
-        }
-        .team-score {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #0078d7;
-        }
-        .quarter-time {
-            text-align: center;
-            font-size: 1.1em;
-            color: #555;
-            margin-top: 10px;
-        }
-        .game-info {
-            text-align: center;
-            font-size: 0.9em;
-            color: #888;
-            margin-top: 10px;
-        }
-        .game-date {
-            text-align: center;
-            font-size: 1em;
-            color: #555;
-            margin-top: 10px;
-        }
-        .league-name {
-            text-align: center;
-            font-size: 1em;
-            color: #555;
-            margin-bottom: 10px;
-        }
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-        .loading {
-            text-align: center;
-            font-size: 1.5em;
-            color: #0078d7;
-            margin-top: 20px;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            font-size: 1em;
-            color: #555;
-        }
-        .footer a {
-            color: #0078d7;
-            text-decoration: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Live Scores</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #eef2f7;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+    .game {
+      background-color: #ffffff;
+      padding: 20px;
+      margin: 15px auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+      max-width: 600px;
+    }
+    .game:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+    .team {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 15px 0;
+    }
+    .team-name {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #333;
+      text-align: left;
+    }
+    .team-score {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #0078d7;
+    }
+    .quarter-time {
+      text-align: center;
+      font-size: 1.1em;
+      color: #555;
+      margin-top: 10px;
+    }
+    .game-info {
+      text-align: center;
+      font-size: 0.9em;
+      color: #888;
+      margin-top: 10px;
+    }
+    .game-date {
+      text-align: center;
+      font-size: 1em;
+      color: #555;
+      margin-top: 10px;
+    }
+    .league-name {
+      text-align: center;
+      font-size: 1em;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    .loading {
+      text-align: center;
+      font-size: 1.5em;
+      color: #0078d7;
+      margin-top: 20px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 1em;
+      color: #555;
+    }
+    .footer a {
+      color: #0078d7;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-    <h1>Live Scores</h1>
-    <div id="loading" class="loading">Loading... 0%</div>
-    <div id="live-scores"></div>
-    <h1>All Games From Current Month</h1>
-    <div id="all-games"></div>
-    <script>
-        let firstLoad = true;
+  <h1>Live Scores</h1>
+  <div id="loading" class="loading">Loading... 0%</div>
+  <div id="live-scores"></div>
+  <h1>All Games From Current Month</h1>
+  <div id="all-games"></div>
 
-        async function fetchLiveScores() {
-            const loadingDiv = document.getElementById('loading');
-            const liveScoresDiv = document.getElementById('live-scores');
-            const allGamesDiv = document.getElementById('all-games');
+  <script>
+    let firstLoad = true;
 
-            if (firstLoad) {
-                loadingDiv.style.display = 'block';
-                liveScoresDiv.style.display = 'none';
-                allGamesDiv.style.display = 'none';
+    async function fetchGames() {
+      const loadingDiv = document.getElementById('loading');
+      const liveScoresDiv = document.getElementById('live-scores');
+      const allGamesDiv = document.getElementById('all-games');
 
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += 1;
-                    loadingDiv.textContent = `Loading... ${progress}%`;
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                    }
-                }, 180); // 180ms * 100 = 18000ms (18 seconds)
-            }
+      // Show loading screen on first load
+      if (firstLoad) {
+        loadingDiv.style.display = 'block';
+        liveScoresDiv.style.display = 'none';
+        allGamesDiv.style.display = 'none';
 
-            try {
-                const liveResponse = await fetch('/api/live-scores');
-                const allResponse = await fetch('/api/all-games');
-                if (!liveResponse.ok || !allResponse.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const liveGames = await liveResponse.json();
-                const allGames = await allResponse.json();
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 1;
+          loadingDiv.textContent = `Loading... ${progress}%`;
+          if (progress >= 100) {
+            clearInterval(interval);
+          }
+        }, 180); // 180ms * 100 = ~18 seconds
+      }
 
-                liveScoresDiv.innerHTML = '';
-                liveGames.forEach(game => {
-                    const gameDiv = document.createElement('div');
-                    gameDiv.className = 'game';
-                    gameDiv.innerHTML = `
-                        <a href="${game.url}" target="_blank">
-                            <div class="league-name">
-                                ${game.league_name}
-                            </div>
-                            <div class="team">
-                                <span class="team-name">${game.team_a_name}</span>
-                                <span class="team-score">${game.team_a_score}</span>
-                            </div>
-                            <div class="team">
-                                <span class="team-name">${game.team_b_name}</span>
-                                <span class="team-score">${game.team_b_score}</span>
-                            </div>
-                            <div class="quarter-time">
-                                ${game.quarter} - ${game.time_left}
-                            </div>
-                            <div class="game-date">
-                                ${game.date}
-                            </div>
-                            <div class="game-info">
-                                Click to view more details
-                            </div>
-                        </a>
-                    `;
-                    liveScoresDiv.appendChild(gameDiv);
-                });
-
-                allGamesDiv.innerHTML = '';
-                allGames.forEach(game => {
-                    const gameDiv = document.createElement('div');
-                    gameDiv.className = 'game';
-                    gameDiv.innerHTML = `
-                        <a href="${game.url}" target="_blank">
-                            <div class="league-name">
-                                ${game.league_name}
-                            </div>
-                            <div class="team">
-                                <span class="team-name">${game.team_a_name}</span>
-                                <span class="team-score">${game.team_a_score}</span>
-                            </div>
-                            <div class="team">
-                                <span class="team-name">${game.team_b_name}</span>
-                                <span class="team-score">${game.team_b_score}</span>
-                            </div>
-                            <div class="quarter-time">
-                                ${game.quarter} - ${game.time_left}
-                            </div>
-                            <div class="game-date">
-                                ${game.date}
-                            </div>
-                            <div class="game-info">
-                                Click to view more details
-                            </div>
-                        </a>
-                    `;
-                    allGamesDiv.appendChild(gameDiv);
-                });
-            } catch (error) {
-                console.error('Failed to fetch scores:', error);
-                setTimeout(fetchLiveScores, 5000); // Retry after 5 seconds
-            } finally {
-                if (firstLoad) {
-                    firstLoad = false;
-                    loadingDiv.style.display = 'none';
-                    liveScoresDiv.style.display = 'block';
-                    allGamesDiv.style.display = 'block';
-                }
-            }
+      try {
+        // Single fetch to the unified /api/games endpoint
+        const response = await fetch('/api/games');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
         }
+        const data = await response.json();
 
-        // Fetch live scores every 30 seconds
-        setInterval(fetchLiveScores, 30000);
-        // Initial fetch
-        fetchLiveScores();
-    </script>
-    <div class="footer">
-        Developed by Elias Liassides.<br>
-        To learn more about my work <a href="https://eliasl15.github.io/portfolio" target="_blank">click here</a>.
-    </div>
+        // data should be shaped like: { live_games: [...], all_games: [...] }
+        const { live_games, all_games } = data;
+
+        // Clear existing content
+        liveScoresDiv.innerHTML = '';
+        allGamesDiv.innerHTML = '';
+
+        // Populate LIVE GAMES
+        live_games.forEach(game => {
+          const gameDiv = document.createElement('div');
+          gameDiv.className = 'game';
+          gameDiv.innerHTML = `
+            <a href="${game.url}" target="_blank">
+              <div class="league-name">${game.league_name}</div>
+              <div class="team">
+                <span class="team-name">${game.team_a_name}</span>
+                <span class="team-score">${game.team_a_score}</span>
+              </div>
+              <div class="team">
+                <span class="team-name">${game.team_b_name}</span>
+                <span class="team-score">${game.team_b_score}</span>
+              </div>
+              <div class="quarter-time">
+                ${game.quarter} - ${game.time_left}
+              </div>
+              <div class="game-date">
+                ${game.date}
+              </div>
+              <div class="game-info">
+                Click to view more details
+              </div>
+            </a>
+          `;
+          liveScoresDiv.appendChild(gameDiv);
+        });
+
+        // Populate ALL GAMES
+        all_games.forEach(game => {
+          const gameDiv = document.createElement('div');
+          gameDiv.className = 'game';
+          gameDiv.innerHTML = `
+            <a href="${game.url}" target="_blank">
+              <div class="league-name">${game.league_name}</div>
+              <div class="team">
+                <span class="team-name">${game.team_a_name}</span>
+                <span class="team-score">${game.team_a_score}</span>
+              </div>
+              <div class="team">
+                <span class="team-name">${game.team_b_name}</span>
+                <span class="team-score">${game.team_b_score}</span>
+              </div>
+              <div class="quarter-time">
+                ${game.quarter} - ${game.time_left}
+              </div>
+              <div class="game-date">
+                ${game.date}
+              </div>
+              <div class="game-info">
+                Click to view more details
+              </div>
+            </a>
+          `;
+          allGamesDiv.appendChild(gameDiv);
+        });
+      } catch (error) {
+        console.error('Failed to fetch scores:', error);
+        // Retry after 5 seconds if it fails
+        setTimeout(fetchGames, 5000);
+      } finally {
+        // Hide loading, show content after the first load
+        if (firstLoad) {
+          firstLoad = false;
+          loadingDiv.style.display = 'none';
+          liveScoresDiv.style.display = 'block';
+          allGamesDiv.style.display = 'block';
+        }
+      }
+    }
+
+    // Initial fetch
+    fetchGames();
+    // Fetch every 30 seconds
+    setInterval(fetchGames, 30000);
+  </script>
+
+  <div class="footer">
+    Developed by Elias Liassides.<br>
+    To learn more about my work
+    <a href="https://eliasl15.github.io/portfolio" target="_blank">
+      click here
+    </a>.
+  </div>
 </body>
 </html>
