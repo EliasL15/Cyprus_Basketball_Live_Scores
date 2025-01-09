@@ -2,4 +2,3 @@ Flask==2.3.2
 playwright
 gunicorn
 flask-caching
-flask-apscheduler
