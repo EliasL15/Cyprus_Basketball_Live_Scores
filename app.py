@@ -16,56 +16,59 @@ def scrape_dynamic_content():
     all_games = []
     current_month = datetime.now().strftime('%m')
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto("https://www.cbf.basketball/")
-        
-        page.wait_for_selector('.mbt-game-scroller-v2-game')
-        games = page.query_selector_all('.mbt-game-scroller-v2-game')
-        
-        for game in games:
-            team_a_name = game.query_selector('.mbt-game-scroller-v2-teams-team-a-name').inner_text()
-            team_a_score = game.query_selector('.mbt-game-scroller-v2-teams-team-a-score').inner_text()
-            team_b_name = game.query_selector('.mbt-game-scroller-v2-teams-team-b-name').inner_text()
-            team_b_score = game.query_selector('.mbt-game-scroller-v2-teams-team-b-score').inner_text()
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto("https://www.cbf.basketball/")
             
-            # Attempt to parse href
-            href = game.get_attribute('href')
-            match = re.search(r"window\.open\('([^']+)'", href)
-            if match:
-                game_url = match.group(1)
-            else:
-                game_url = f"https://www.cbf.basketball/{href}"
+            page.wait_for_selector('.mbt-game-scroller-v2-game')
+            games = page.query_selector_all('.mbt-game-scroller-v2-game')
             
-            quarter = game.query_selector('.mbt-game-scroller-v2-game-info-time').inner_text().strip()
-            time_left = game.evaluate(
-                '(element) => element.nextSibling?.textContent || ""',
-                game.query_selector('.mbt-game-scroller-v2-game-info-time')
-            ).strip()
-            
-            game_date = game.query_selector('.mbt-game-scroller-v2-game-info-date').inner_text().strip()
-            league_name = game.query_selector('.mbt-game-scroller-v2-league-name').inner_text().strip()
-            
-            game_data = {
-                'team_a_name': team_a_name,
-                'team_a_score': team_a_score,
-                'team_b_name': team_b_name,
-                'team_b_score': team_b_score,
-                'url': game_url,
-                'quarter': quarter,
-                'time_left': time_left,
-                'date': game_date,
-                'league_name': league_name
-            }
-            
-            if game_date.startswith(current_month):
-                all_games.append(game_data)
-            
-            if 'mbt-game-scroller-v2-live' in game.get_attribute('class'):
-                live_games.append(game_data)
+            for game in games:
+                team_a_name = game.query_selector('.mbt-game-scroller-v2-teams-team-a-name').inner_text()
+                team_a_score = game.query_selector('.mbt-game-scroller-v2-teams-team-a-score').inner_text()
+                team_b_name = game.query_selector('.mbt-game-scroller-v2-teams-team-b-name').inner_text()
+                team_b_score = game.query_selector('.mbt-game-scroller-v2-teams-team-b-score').inner_text()
+                
+                # Attempt to parse href
+                href = game.get_attribute('href')
+                match = re.search(r"window\.open\('([^']+)'", href)
+                if match:
+                    game_url = match.group(1)
+                else:
+                    game_url = f"https://www.cbf.basketball/{href}"
+                
+                quarter = game.query_selector('.mbt-game-scroller-v2-game-info-time').inner_text().strip()
+                time_left = game.evaluate(
+                    '(element) => element.nextSibling?.textContent || ""',
+                    game.query_selector('.mbt-game-scroller-v2-game-info-time')
+                ).strip()
+                
+                game_date = game.query_selector('.mbt-game-scroller-v2-game-info-date').inner_text().strip()
+                league_name = game.query_selector('.mbt-game-scroller-v2-league-name').inner_text().strip()
+                
+                game_data = {
+                    'team_a_name': team_a_name,
+                    'team_a_score': team_a_score,
+                    'team_b_name': team_b_name,
+                    'team_b_score': team_b_score,
+                    'url': game_url,
+                    'quarter': quarter,
+                    'time_left': time_left,
+                    'date': game_date,
+                    'league_name': league_name
+                }
+                
+                if game_date.startswith(current_month):
+                    all_games.append(game_data)
+                
+                if 'mbt-game-scroller-v2-live' in game.get_attribute('class'):
+                    live_games.append(game_data)
 
-        browser.close()
+            browser.close()
+    except Exception as e:
+        print(f"Scraping error: {str(e)}")
     
     return {
         'live_games': live_games,
@@ -74,6 +77,7 @@ def scrape_dynamic_content():
 
 def continuous_scraper():
     global scraped_data
+    time.sleep(60)  # Initial delay to allow the server to start up
     while True:
         try:
             new_data = scrape_dynamic_content()
