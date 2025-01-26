@@ -105,4 +105,4 @@ if __name__ == '__main__':
     # Start background scraping thread
     scraper_thread = threading.Thread(target=continuous_scraper, daemon=True)
     scraper_thread.start()
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=8000)
