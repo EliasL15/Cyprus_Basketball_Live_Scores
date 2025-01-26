@@ -1,11 +1,15 @@
 from flask import Flask, render_template, jsonify
-from flask_caching import Cache
 from playwright.sync_api import sync_playwright
 import re
 from datetime import datetime
+import threading
+import time
 
 app = Flask(__name__)
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
+# Global variables to store scraped data and lock for thread safety
+scraped_data = None
+data_lock = threading.Lock()
 
 def scrape_dynamic_content():
     live_games = []
@@ -68,16 +72,33 @@ def scrape_dynamic_content():
         'all_games': all_games
     }
 
+def continuous_scraper():
+    global scraped_data
+    while True:
+        try:
+            new_data = scrape_dynamic_content()
+            with data_lock:
+                scraped_data = new_data
+            print("Successfully updated game data")
+        except Exception as e:
+            print(f"Scraping error: {str(e)}")
+        time.sleep(30)  # Wait 30 seconds between scrapes
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/api/games')
-@cache.cached(timeout=60)
 def get_games():
-    """Return a single JSON with both live and all games."""
-    data = scrape_dynamic_content()
-    return jsonify(data)
+    """Return the latest scraped data."""
+    global scraped_data
+    with data_lock:
+        if scraped_data is None:
+            return jsonify({"error": "Data not available yet"}), 503
+        return jsonify(scraped_data)
 
 if __name__ == '__main__':
+    # Start background scraping thread
+    scraper_thread = threading.Thread(target=continuous_scraper, daemon=True)
+    scraper_thread.start()
     app.run(debug=True, port=5001)
