@@ -20,6 +20,28 @@
       font-size: 2em;
       margin-bottom: 20px;
     }
+    .navbar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .navbar select {
+      padding: 10px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background-color: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    .navbar select:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+    .navbar select:focus {
+      outline: none;
+    }
+
     .game {
       background-color: #ffffff;
       padding: 20px;
@@ -92,14 +114,24 @@
 </head>
 <body>
   <h1>Live Scores</h1>
+  <div class="navbar">
+    <select id="league-filter" onchange="filterGamesByLeague()">
+      <option value="all">All Leagues</option>
+    </select>
+  </div>
   <div id="live-scores"></div>
   <h1>All Games From Current Month</h1>
   <div id="all-games"></div>
 
   <script>
+    let allGamesData = [];
+    let liveGamesData = [];
+
     async function fetchGames() {
       const liveScoresDiv = document.getElementById('live-scores');
       const allGamesDiv = document.getElementById('all-games');
+      const leagueFilter = document.getElementById('league-filter');
+      const selectedLeague = leagueFilter.value; // Preserve the selected value
 
       try {
         // Single fetch to the unified /api/games endpoint
@@ -110,14 +142,46 @@
         const data = await response.json();
 
         // data should be shaped like: { live_games: [...], all_games: [...] }
-        const { live_games, all_games } = data;
+        liveGamesData = data.live_games;
+        allGamesData = data.all_games;
 
-        // Clear existing content
-        liveScoresDiv.innerHTML = '';
-        allGamesDiv.innerHTML = '';
+        // Populate league filter options
+        const leagues = new Set();
+        liveGamesData.forEach(game => leagues.add(game.league_name));
+        allGamesData.forEach(game => leagues.add(game.league_name));
+        leagueFilter.innerHTML = '<option value="all">All Leagues</option>';
+        leagues.forEach(league => {
+          const option = document.createElement('option');
+          option.value = league;
+          option.textContent = league;
+          leagueFilter.appendChild(option);
+        });
 
-        // Populate LIVE GAMES
-        live_games.forEach(game => {
+        // Restore the selected value
+        leagueFilter.value = selectedLeague;
+
+        // Display games
+        displayGames();
+      } catch (error) {
+        console.error('Failed to fetch scores:', error);
+        // Retry after 5 seconds if it fails
+        setTimeout(fetchGames, 5000);
+      }
+    }
+
+    function displayGames() {
+      const liveScoresDiv = document.getElementById('live-scores');
+      const allGamesDiv = document.getElementById('all-games');
+      const leagueFilter = document.getElementById('league-filter').value;
+
+      // Clear existing content
+      liveScoresDiv.innerHTML = '';
+      allGamesDiv.innerHTML = '';
+
+      // Filter and display LIVE GAMES
+      liveGamesData
+        .filter(game => leagueFilter === 'all' || game.league_name === leagueFilter)
+        .forEach(game => {
           const gameDiv = document.createElement('div');
           gameDiv.className = 'game';
           gameDiv.innerHTML = `
@@ -145,8 +209,10 @@
           liveScoresDiv.appendChild(gameDiv);
         });
 
-        // Populate ALL GAMES
-        all_games.forEach(game => {
+      // Filter and display ALL GAMES
+      allGamesData
+        .filter(game => leagueFilter === 'all' || game.league_name === leagueFilter)
+        .forEach(game => {
           const gameDiv = document.createElement('div');
           gameDiv.className = 'game';
           gameDiv.innerHTML = `
@@ -173,11 +239,10 @@
           `;
           allGamesDiv.appendChild(gameDiv);
         });
-      } catch (error) {
-        console.error('Failed to fetch scores:', error);
-        // Retry after 5 seconds if it fails
-        setTimeout(fetchGames, 5000);
-      }
+    }
+
+    function filterGamesByLeague() {
+      displayGames();
     }
 
     // Initial fetch
