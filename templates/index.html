@@ -78,12 +78,6 @@
       text-decoration: none;
       color: inherit;
     }
-    .loading {
-      text-align: center;
-      font-size: 1.5em;
-      color: #0078d7;
-      margin-top: 20px;
-    }
     .footer {
       text-align: center;
       margin-top: 40px;
@@ -98,34 +92,14 @@
 </head>
 <body>
   <h1>Live Scores</h1>
-  <div id="loading" class="loading">Loading... 0%</div>
   <div id="live-scores"></div>
   <h1>All Games From Current Month</h1>
   <div id="all-games"></div>
 
   <script>
-    let firstLoad = true;
-
     async function fetchGames() {
-      const loadingDiv = document.getElementById('loading');
       const liveScoresDiv = document.getElementById('live-scores');
       const allGamesDiv = document.getElementById('all-games');
-
-      // Show loading screen on first load
-      if (firstLoad) {
-        loadingDiv.style.display = 'block';
-        liveScoresDiv.style.display = 'none';
-        allGamesDiv.style.display = 'none';
-
-        let progress = 0;
-        const interval = setInterval(() => {
-          progress += 1;
-          loadingDiv.textContent = `Loading... ${progress}%`;
-          if (progress >= 100) {
-            clearInterval(interval);
-          }
-        }, 180); // 180ms * 100 = ~18 seconds
-      }
 
       try {
         // Single fetch to the unified /api/games endpoint
@@ -203,14 +177,6 @@
         console.error('Failed to fetch scores:', error);
         // Retry after 5 seconds if it fails
         setTimeout(fetchGames, 5000);
-      } finally {
-        // Hide loading, show content after the first load
-        if (firstLoad) {
-          firstLoad = false;
-          loadingDiv.style.display = 'none';
-          liveScoresDiv.style.display = 'block';
-          allGamesDiv.style.display = 'block';
-        }
       }
     }
 
