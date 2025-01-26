@@ -22,7 +22,11 @@ def scrape_dynamic_content():
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(
+                headless=True,
+                args=['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+            )
+
             page = browser.new_page()
             page.goto("https://www.cbf.basketball/")
             
@@ -82,7 +86,6 @@ def scrape_dynamic_content():
 def continuous_scraper():
     global scraped_data
     logging.info("Starting continuous scraper")
-    time.sleep(120)  # Increased initial delay to allow the server to start up
     while True:
         try:
             new_data = scrape_dynamic_content()
@@ -119,4 +122,4 @@ if __name__ == '__main__':
     # Start background scraping thread
     scraper_thread = threading.Thread(target=continuous_scraper, daemon=True)
     scraper_thread.start()
-    app.run(debug=False, port=8000)
+    app.run(debug=True, port=8000)
