@@ -4,8 +4,12 @@ import re
 from datetime import datetime
 import threading
 import time
+import logging
 
 app = Flask(__name__)
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 # Global variables to store scraped data and lock for thread safety
 scraped_data = None
@@ -68,7 +72,7 @@ def scrape_dynamic_content():
 
             browser.close()
     except Exception as e:
-        print(f"Scraping error: {str(e)}")
+        logging.error(f"Scraping error: {str(e)}")
     
     return {
         'live_games': live_games,
@@ -77,15 +81,16 @@ def scrape_dynamic_content():
 
 def continuous_scraper():
     global scraped_data
-    time.sleep(60)  # Initial delay to allow the server to start up
+    logging.info("Starting continuous scraper")
+    time.sleep(120)  # Increased initial delay to allow the server to start up
     while True:
         try:
             new_data = scrape_dynamic_content()
             with data_lock:
                 scraped_data = new_data
-            print("Successfully updated game data")
+            logging.info(f"Successfully updated game data: {scraped_data}")
         except Exception as e:
-            print(f"Scraping error: {str(e)}")
+            logging.error(f"Scraping error: {str(e)}")
         time.sleep(30)  # Wait 30 seconds between scrapes
 
 @app.route('/')
@@ -101,8 +106,17 @@ def get_games():
             return jsonify({"error": "Data not available yet"}), 503
         return jsonify(scraped_data)
 
+@app.route('/api/scraper_status')
+def scraper_status():
+    """Return the status of the scraper."""
+    global scraped_data
+    with data_lock:
+        if scraped_data is None:
+            return jsonify({"status": "Scraper not yet initialized"}), 200
+        return jsonify({"status": "Scraper running", "data_count": len(scraped_data['all_games'])}), 200
+
 if __name__ == '__main__':
     # Start background scraping thread
     scraper_thread = threading.Thread(target=continuous_scraper, daemon=True)
     scraper_thread.start()
-    app.run(debug=True, port=8000)
+    app.run(debug=False, port=8000)
