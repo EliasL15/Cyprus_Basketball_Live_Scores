@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"
   />
   <title>Live Scores</title>
   <style>
@@ -13,19 +13,32 @@
       margin: 0;
       padding: 20px;
       background-color: #eef2f7;
-    }
-    h1 {
       text-align: center;
+    }
+
+    h1 {
       color: #333;
       font-size: 2em;
       margin-bottom: 20px;
     }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.5em;
+      }
+    }
+
     .navbar {
       display: flex;
       justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
       margin-bottom: 20px;
     }
+
     .navbar select {
+      width: 100%;
+      max-width: 300px;
       padding: 10px;
       font-size: 1em;
       border: 1px solid #ccc;
@@ -34,10 +47,12 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       transition: box-shadow 0.3s ease, transform 0.2s ease;
     }
+
     .navbar select:hover {
       transform: translateY(-3px);
       box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
     }
+
     .navbar select:focus {
       outline: none;
     }
@@ -50,62 +65,63 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       transition: box-shadow 0.3s ease, transform 0.2s ease;
       max-width: 600px;
+      width: 100%;
+      box-sizing: border-box;
     }
+
     .game:hover {
       transform: translateY(-3px);
       box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
     }
+
+    @media (max-width: 480px) {
+      .game {
+        padding: 15px;
+        font-size: 0.9em;
+      }
+    }
+
     .team {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin: 15px 0;
     }
+
     .team-name {
       font-size: 1.2em;
       font-weight: bold;
       color: #333;
       text-align: left;
     }
+
     .team-score {
       font-size: 1.5em;
       font-weight: bold;
       color: #0078d7;
     }
-    .quarter-time {
-      text-align: center;
-      font-size: 1.1em;
-      color: #555;
-      margin-top: 10px;
-    }
-    .game-info {
-      text-align: center;
-      font-size: 0.9em;
-      color: #888;
-      margin-top: 10px;
-    }
-    .game-date {
-      text-align: center;
-      font-size: 1em;
-      color: #555;
-      margin-top: 10px;
-    }
+
+    .quarter-time,
+    .game-date,
+    .game-info,
     .league-name {
-      text-align: center;
       font-size: 1em;
       color: #555;
-      margin-bottom: 10px;
+      margin-top: 10px;
     }
+
     a {
       text-decoration: none;
       color: inherit;
     }
+
     .footer {
       text-align: center;
       margin-top: 40px;
       font-size: 1em;
       color: #555;
     }
+
     .footer a {
       color: #0078d7;
       text-decoration: none;
@@ -119,8 +135,8 @@
       <option value="all">All Leagues</option>
     </select>
   </div>
-  <div id="live-scores"></div>
   <h1>All Games From Current Month</h1>
+  <div id="live-scores"></div>
   <div id="all-games"></div>
 
   <script>
@@ -134,18 +150,15 @@
       const selectedLeague = leagueFilter.value; // Preserve the selected value
 
       try {
-        // Single fetch to the unified /api/games endpoint
         const response = await fetch('/api/games');
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
 
-        // data should be shaped like: { live_games: [...], all_games: [...] }
         liveGamesData = data.live_games;
         allGamesData = data.all_games;
 
-        // Populate league filter options
         const leagues = new Set();
         liveGamesData.forEach(game => leagues.add(game.league_name));
         allGamesData.forEach(game => leagues.add(game.league_name));
@@ -157,14 +170,11 @@
           leagueFilter.appendChild(option);
         });
 
-        // Restore the selected value
         leagueFilter.value = selectedLeague;
 
-        // Display games
         displayGames();
       } catch (error) {
         console.error('Failed to fetch scores:', error);
-        // Retry after 5 seconds if it fails
         setTimeout(fetchGames, 5000);
       }
     }
@@ -174,11 +184,9 @@
       const allGamesDiv = document.getElementById('all-games');
       const leagueFilter = document.getElementById('league-filter').value;
 
-      // Clear existing content
       liveScoresDiv.innerHTML = '';
       allGamesDiv.innerHTML = '';
 
-      // Filter and display LIVE GAMES
       liveGamesData
         .filter(game => leagueFilter === 'all' || game.league_name === leagueFilter)
         .forEach(game => {
@@ -195,21 +203,14 @@
                 <span class="team-name">${game.team_b_name}</span>
                 <span class="team-score">${game.team_b_score}</span>
               </div>
-              <div class="quarter-time">
-                ${game.quarter} - ${game.time_left}
-              </div>
-              <div class="game-date">
-                ${game.date}
-              </div>
-              <div class="game-info">
-                Click to view more details
-              </div>
+              <div class="quarter-time">${game.quarter} - ${game.time_left}</div>
+              <div class="game-date">${game.date}</div>
+              <div class="game-info">Click to view more details</div>
             </a>
           `;
           liveScoresDiv.appendChild(gameDiv);
         });
 
-      // Filter and display ALL GAMES
       allGamesData
         .filter(game => leagueFilter === 'all' || game.league_name === leagueFilter)
         .forEach(game => {
@@ -226,15 +227,9 @@
                 <span class="team-name">${game.team_b_name}</span>
                 <span class="team-score">${game.team_b_score}</span>
               </div>
-              <div class="quarter-time">
-                ${game.quarter} - ${game.time_left}
-              </div>
-              <div class="game-date">
-                ${game.date}
-              </div>
-              <div class="game-info">
-                Click to view more details
-              </div>
+              <div class="quarter-time">${game.quarter} - ${game.time_left}</div>
+              <div class="game-date">${game.date}</div>
+              <div class="game-info">Click to view more details</div>
             </a>
           `;
           allGamesDiv.appendChild(gameDiv);
@@ -245,18 +240,14 @@
       displayGames();
     }
 
-    // Initial fetch
     fetchGames();
-    // Fetch every 30 seconds
     setInterval(fetchGames, 30000);
   </script>
 
   <div class="footer">
     Developed by Elias Liassides.<br>
     To learn more about my work
-    <a href="https://eliasl15.github.io/portfolio" target="_blank">
-      click here
-    </a>.
+    <a href="https://eliasl15.github.io/portfolio" target="_blank">click here</a>.
   </div>
 </body>
 </html>
