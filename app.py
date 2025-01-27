@@ -120,7 +120,8 @@ def scraper_status():
             return jsonify({"status": "Scraper not yet initialized"}), 200
         return jsonify({"status": "Scraper running", "data_count": len(scraped_data['all_games'])}), 200
 
-if not os.environ.get('GUNICORN_RUNNING'):
+if not os.environ.get("GUNICORN_MASTER_STARTED"):
     scraper_thread = threading.Thread(target=continuous_scraper, daemon=True)
     scraper_thread.start()
-    logging.info("Scraper thread started")
+    os.environ["GUNICORN_MASTER_STARTED"] = "1"
+    logging.info("Scraper thread initialized in master process")
