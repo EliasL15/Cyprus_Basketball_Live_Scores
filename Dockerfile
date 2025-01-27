@@ -33,5 +33,4 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 EXPOSE 8000
 
 # Start application
-CMD ["sh", "-c", \
-     "WORKER_ENV=1 gunicorn app:app --bind 0.0.0.0:8000 --workers 1 --threads 4 --timeout 120 --worker-tmp-dir /dev/shm"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8000", "--workers", "1", "--preload", "--timeout", "120", "--name", "cyprus_scraper"]
