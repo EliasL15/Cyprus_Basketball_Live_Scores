@@ -94,7 +94,7 @@ def continuous_scraper():
             logging.info(f"Successfully updated game data: {scraped_data}")
         except Exception as e:
             logging.error(f"Scraping error: {str(e)}")
-        time.sleep(30)  # Wait 30 seconds between scrapes
+        time.sleep(90)  # Wait 90 seconds between scrapes
 
 @app.route('/')
 def index():
