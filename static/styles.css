@@ -4,6 +4,7 @@ body {
     padding: 20px;
     background-color: #eef2f7;
     text-align: center;
+    overscroll-behavior: none;
   }
   
   h1 {
@@ -73,25 +74,39 @@ body {
     }
   }
   
-  .team {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 15px 0;
-  }
-  
-  .team-name {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #333;
-    text-align: left;
-  }
-  
-  .team-score {
-    font-size: 1.5em;
-    font-weight: bold;
-    color: #0078d7;
-  }
+ /* Update the team layout to enforce a row layout */
+.team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 15px 0;
+}
+
+/* Set a fixed width for logo and score */
+.team-logo {
+  flex-shrink: 0;
+  width: 50px;            /* adjust as needed */
+  height: auto;
+  margin-right: 10px;     /* optional spacing */
+}
+
+.team-score {
+  flex-shrink: 0;
+  width: 50px;            /* adjust as needed */
+  text-align: right;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #0078d7;
+}
+
+/* Center the team name in the remaining space */
+.team-name {
+  flex: 1;
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
   
   .quarter-time,
   .game-date,

@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
   <title>Live Scores</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
@@ -28,7 +25,7 @@
       const liveScoresDiv = document.getElementById('live-scores');
       const allGamesDiv = document.getElementById('all-games');
       const leagueFilter = document.getElementById('league-filter');
-      const selectedLeague = leagueFilter.value; // Preserve the selected value
+      const selectedLeague = leagueFilter.value; // Preserve selected value
 
       try {
         const response = await fetch('/api/games');
@@ -36,13 +33,13 @@
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-
         liveGamesData = data.live_games;
         allGamesData = data.all_games;
 
+        // Use the updated key "competition" for filtering
         const leagues = new Set();
-        liveGamesData.forEach(game => leagues.add(game.league_name));
-        allGamesData.forEach(game => leagues.add(game.league_name));
+        liveGamesData.forEach(game => leagues.add(game.competition));
+        allGamesData.forEach(game => leagues.add(game.competition));
         leagueFilter.innerHTML = '<option value="all">All Leagues</option>';
         leagues.forEach(league => {
           const option = document.createElement('option');
@@ -50,9 +47,7 @@
           option.textContent = league;
           leagueFilter.appendChild(option);
         });
-
         leagueFilter.value = selectedLeague;
-
         displayGames();
       } catch (error) {
         console.error('Failed to fetch scores:', error);
@@ -64,27 +59,29 @@
       const liveScoresDiv = document.getElementById('live-scores');
       const allGamesDiv = document.getElementById('all-games');
       const leagueFilter = document.getElementById('league-filter').value;
-
       liveScoresDiv.innerHTML = '';
       allGamesDiv.innerHTML = '';
 
+      // Updated filtering based on "competition"
       liveGamesData
-        .filter(game => leagueFilter === 'all' || game.league_name === leagueFilter)
+        .filter(game => leagueFilter === 'all' || game.competition === leagueFilter)
         .forEach(game => {
           const gameDiv = document.createElement('div');
           gameDiv.className = 'game';
+          // Display team logos along with name and score
           gameDiv.innerHTML = `
-            <a href="${game.url}" target="_blank">
-              <div class="league-name">${game.league_name}</div>
+            <a href="${game.match_link}" target="_blank">
+              <div class="league-name">${game.competition}</div>
               <div class="team">
-                <span class="team-name">${game.team_a_name}</span>
-                <span class="team-score">${game.team_a_score}</span>
+                <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
+                <span class="team-name">${game.teams[0].name}</span>
+                <span class="team-score">${game.teams[0].score}</span>
               </div>
               <div class="team">
-                <span class="team-name">${game.team_b_name}</span>
-                <span class="team-score">${game.team_b_score}</span>
+                <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
+                <span class="team-name">${game.teams[1].name}</span>
+                <span class="team-score">${game.teams[1].score}</span>
               </div>
-              <div class="quarter-time">${game.quarter} - ${game.time_left}</div>
               <div class="game-date">${game.date}</div>
               <div class="game-info">Click to view more details</div>
             </a>
@@ -93,22 +90,23 @@
         });
 
       allGamesData
-        .filter(game => leagueFilter === 'all' || game.league_name === leagueFilter)
+        .filter(game => leagueFilter === 'all' || game.competition === leagueFilter)
         .forEach(game => {
           const gameDiv = document.createElement('div');
           gameDiv.className = 'game';
           gameDiv.innerHTML = `
-            <a href="${game.url}" target="_blank">
-              <div class="league-name">${game.league_name}</div>
+            <a href="${game.match_link}" target="_blank">
+              <div class="league-name">${game.competition}</div>
               <div class="team">
-                <span class="team-name">${game.team_a_name}</span>
-                <span class="team-score">${game.team_a_score}</span>
+                <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
+                <span class="team-name">${game.teams[0].name}</span>
+                <span class="team-score">${game.teams[0].score}</span>
               </div>
               <div class="team">
-                <span class="team-name">${game.team_b_name}</span>
-                <span class="team-score">${game.team_b_score}</span>
+                <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
+                <span class="team-name">${game.teams[1].name}</span>
+                <span class="team-score">${game.teams[1].score}</span>
               </div>
-              <div class="quarter-time">${game.quarter} - ${game.time_left}</div>
               <div class="game-date">${game.date}</div>
               <div class="game-info">Click to view more details</div>
             </a>
@@ -122,7 +120,7 @@
     }
 
     fetchGames();
-    setInterval(fetchGames, 30000);
+    setInterval(fetchGames, 15000);
   </script>
 
   <div class="footer">
