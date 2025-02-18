@@ -72,7 +72,7 @@ def fetch_genius_sports_data():
             for team in match_data['teams']:
                 team['name'] = team['name'].encode('utf-8').decode('unicode_escape')
 
-            if match_data['status'].lower() == "upcoming":
+            if match_data['status'].lower() == "upcoming" or match_data['status'].lower() == "final":
                 matches["all_games"].append(match_data)
             else:
                 matches["live_games"].append(match_data)
