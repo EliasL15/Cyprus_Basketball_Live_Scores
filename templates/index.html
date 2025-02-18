@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
   <title>Live Scores</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
   <h1>Live Scores</h1>
   <div class="navbar">
@@ -62,55 +64,59 @@
       liveScoresDiv.innerHTML = '';
       allGamesDiv.innerHTML = '';
 
-      // Updated filtering based on "competition"
+      // Display live games first
       liveGamesData
         .filter(game => leagueFilter === 'all' || game.competition === leagueFilter)
         .forEach(game => {
           const gameDiv = document.createElement('div');
           gameDiv.className = 'game';
-          // Display team logos along with name and score
           gameDiv.innerHTML = `
-            <a href="${game.match_link}" target="_blank">
-              <div class="league-name">${game.competition}</div>
-              <div class="team">
-                <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
-                <span class="team-name">${game.teams[0].name}</span>
-                <span class="team-score">${game.teams[0].score}</span>
-              </div>
-              <div class="team">
-                <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
-                <span class="team-name">${game.teams[1].name}</span>
-                <span class="team-score">${game.teams[1].score}</span>
-              </div>
-              <div class="game-date">${game.date}</div>
-              <div class="game-info">Click to view more details</div>
-            </a>
-          `;
+          <a href="${game.match_link}" target="_blank">
+            <div class="league-name">${game.competition}</div>
+            <!-- Add game status -->
+            <div class="game-status">Status: ${game.status}</div>
+            <div class="team">
+              <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
+              <span class="team-name">${game.teams[0].name}</span>
+              <span class="team-score">${game.teams[0].score}</span>
+            </div>
+            <div class="team">
+              <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
+              <span class="team-name">${game.teams[1].name}</span>
+              <span class="team-score">${game.teams[1].score}</span>
+            </div>
+            <div class="game-date">${game.date}</div>
+            <div class="game-info">Click to view more details</div>
+          </a>
+        `;
           liveScoresDiv.appendChild(gameDiv);
         });
 
+      // Display all games next
       allGamesData
         .filter(game => leagueFilter === 'all' || game.competition === leagueFilter)
         .forEach(game => {
           const gameDiv = document.createElement('div');
           gameDiv.className = 'game';
           gameDiv.innerHTML = `
-            <a href="${game.match_link}" target="_blank">
-              <div class="league-name">${game.competition}</div>
-              <div class="team">
-                <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
-                <span class="team-name">${game.teams[0].name}</span>
-                <span class="team-score">${game.teams[0].score}</span>
-              </div>
-              <div class="team">
-                <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
-                <span class="team-name">${game.teams[1].name}</span>
-                <span class="team-score">${game.teams[1].score}</span>
-              </div>
-              <div class="game-date">${game.date}</div>
-              <div class="game-info">Click to view more details</div>
-            </a>
-          `;
+          <a href="${game.match_link}" target="_blank">
+            <div class="league-name">${game.competition}</div>
+            <!-- Add game status -->
+            <div class="game-status">Status: ${game.status}</div>
+            <div class="team">
+              <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
+              <span class="team-name">${game.teams[0].name}</span>
+              <span class="team-score">${game.teams[0].score}</span>
+            </div>
+            <div class="team">
+              <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
+              <span class="team-name">${game.teams[1].name}</span>
+              <span class="team-score">${game.teams[1].score}</span>
+            </div>
+            <div class="game-date">${game.date}</div>
+            <div class="game-info">Click to view more details</div>
+          </a>
+        `;
           allGamesDiv.appendChild(gameDiv);
         });
     }
@@ -129,4 +135,5 @@
     <a href="https://eliasl15.github.io/portfolio" target="_blank">click here</a>.
   </div>
 </body>
+
 </html>
