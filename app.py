@@ -52,6 +52,9 @@ def fetch_genius_sports_data():
             match_date = match_item.find('span', class_='spls_datefield')
             match_data['date'] = match_date.text.strip() if match_date else "N/A"
 
+            match_time = match_item.find('span', class_='spls_timefield')
+            match_data['time'] = match_time.text.strip() if match_time else "N/A"
+
             teams = match_item.find_all('span', class_='spteam')
             match_data['teams'] = []
 

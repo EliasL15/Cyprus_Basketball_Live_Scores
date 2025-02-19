@@ -151,3 +151,8 @@ a {
   color: #0078d7;
   text-decoration: none;
 }
+.game-time {
+  font-size: 1em;
+  color: #555;
+  margin-top: 5px;
+}
