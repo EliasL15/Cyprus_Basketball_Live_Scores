@@ -9,14 +9,15 @@
 </head>
 
 <body>
-  <h1>Live Scores</h1>
+  <h1>Choose League</h1>
   <div class="navbar">
     <select id="league-filter" onchange="filterGamesByLeague()">
       <option value="all">All Leagues</option>
     </select>
   </div>
-  <h1>All Games From Current Month</h1>
+  <h1>Live Games</h1>
   <div id="live-scores"></div>
+  <h1>All Games From Current Month</h1>
   <div id="all-games"></div>
 
   <script>
@@ -74,7 +75,7 @@
           <a href="${game.match_link}" target="_blank">
             <div class="league-name">${game.competition}</div>
             <!-- Add game status -->
-            <div class="game-status">Status: ${game.status}</div>
+            <div class="game-status">${game.status}</div>
             <div class="team">
               <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
               <span class="team-name">${game.teams[0].name}</span>
@@ -103,7 +104,7 @@
           <a href="${game.match_link}" target="_blank">
             <div class="league-name">${game.competition}</div>
             <!-- Add game status -->
-            <div class="game-status">Status: ${game.status}</div>
+            <div class="game-status">${game.status}</div>
             <div class="team">
               <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
               <span class="team-name">${game.teams[0].name}</span>
