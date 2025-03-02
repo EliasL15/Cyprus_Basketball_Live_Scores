@@ -6,19 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
   <title>Live Scores</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
-    .navbar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
 
-    #league-filter {
-      padding: 8px;
-      border-radius: 4px;
-      width: 200px;
-    }
-  </style>
 </head>
 
 <body>
@@ -26,7 +14,7 @@
   <div class="navbar">
     <select id="league-filter" onchange="filterGamesByLeague()">
       <option value="all">All Leagues</option>
-      <option value="keravnos">Keravnos men</option>
+      <option value="keravnos">Keravnos B.C.</option>
     </select>
   </div>
   <h1>Live Games</h1>
@@ -50,12 +38,12 @@
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        liveGamesData = data.live_games;
-        allGamesData = data.all_games;
+        liveGamesData = data.live_games.filter(game => game.status.toLowerCase() === 'live');
+        allGamesData = [...data.live_games.filter(game => game.status.toLowerCase() !== 'live'), ...data.all_games];
 
         // Update leagues dropdown while preserving Keravnos men option
         const leagues = new Set();
-        [...data.live_games, ...data.all_games].forEach(game => leagues.add(game.competition));
+        [...liveGamesData, ...allGamesData].forEach(game => leagues.add(game.competition));
         
         leagueFilter.innerHTML = `
           <option value="all">All Leagues</option>
