@@ -6,6 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
   <title>Live Scores</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    .navbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #league-filter {
+      padding: 8px;
+      border-radius: 4px;
+      width: 200px;
+    }
+  </style>
 </head>
 
 <body>
@@ -13,6 +26,7 @@
   <div class="navbar">
     <select id="league-filter" onchange="filterGamesByLeague()">
       <option value="all">All Leagues</option>
+      <option value="keravnos">Keravnos men</option>
     </select>
   </div>
   <h1>Live Games</h1>
@@ -28,7 +42,7 @@
       const liveScoresDiv = document.getElementById('live-scores');
       const allGamesDiv = document.getElementById('all-games');
       const leagueFilter = document.getElementById('league-filter');
-      const selectedLeague = leagueFilter.value; // Preserve selected value
+      const selectedLeague = leagueFilter.value;
 
       try {
         const response = await fetch('/api/games');
@@ -39,17 +53,18 @@
         liveGamesData = data.live_games;
         allGamesData = data.all_games;
 
-        // Use the updated key "competition" for filtering
+        // Update leagues dropdown while preserving Keravnos men option
         const leagues = new Set();
-        liveGamesData.forEach(game => leagues.add(game.competition));
-        allGamesData.forEach(game => leagues.add(game.competition));
-        leagueFilter.innerHTML = '<option value="all">All Leagues</option>';
-        leagues.forEach(league => {
-          const option = document.createElement('option');
-          option.value = league;
-          option.textContent = league;
-          leagueFilter.appendChild(option);
-        });
+        [...data.live_games, ...data.all_games].forEach(game => leagues.add(game.competition));
+        
+        leagueFilter.innerHTML = `
+          <option value="all">All Leagues</option>
+          <option value="keravnos">Keravnos B.C.</option>
+          ${Array.from(leagues)
+            .filter(league => league !== 'keravnos')
+            .map(league => `<option value="${league}">${league}</option>`)
+            .join('')}
+        `;
         leagueFilter.value = selectedLeague;
         displayGames();
       } catch (error) {
@@ -65,61 +80,68 @@
       liveScoresDiv.innerHTML = '';
       allGamesDiv.innerHTML = '';
 
-      // Display live games first
+      const filterGame = game => {
+        if (leagueFilter === 'all') return true;
+        if (leagueFilter === 'keravnos') {
+          return game.competition === 'Basket League' && 
+                 game.teams.some(team => team.name.includes('ΚΕΡ'));
+        }
+        return game.competition === leagueFilter;
+      };
+
+      // Display live games
       liveGamesData
-        .filter(game => leagueFilter === 'all' || game.competition === leagueFilter)
+        .filter(filterGame)
         .forEach(game => {
           const gameDiv = document.createElement('div');
           gameDiv.className = 'game';
           gameDiv.innerHTML = `
-          <a href="${game.match_link}" target="_blank">
-            <div class="league-name">${game.competition}</div>
-            <!-- Add game status -->
-            <div class="game-status">${game.status}</div>
-            <div class="team">
-              <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
-              <span class="team-name">${game.teams[0].name}</span>
-              <span class="team-score">${game.teams[0].score}</span>
-            </div>
-            <div class="team">
-              <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
-              <span class="team-name">${game.teams[1].name}</span>
-              <span class="team-score">${game.teams[1].score}</span>
-            </div>
-            <div class="game-date">${game.date}</div>
-            ${ game.status.toLowerCase() === 'upcoming' ? `<div class="game-time">Time: ${game.time}</div>` : '' }
-            <div class="game-info">Click to view more details</div>
-          </a>
-        `;
+            <a href="${game.match_link}" target="_blank">
+              <div class="league-name">${game.competition}</div>
+              <div class="game-status">${game.status}</div>
+              <div class="team">
+                <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
+                <span class="team-name">${game.teams[0].name}</span>
+                <span class="team-score">${game.teams[0].score}</span>
+              </div>
+              <div class="team">
+                <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
+                <span class="team-name">${game.teams[1].name}</span>
+                <span class="team-score">${game.teams[1].score}</span>
+              </div>
+              <div class="game-date">${game.date}</div>
+              ${game.status.toLowerCase() === 'upcoming' ? `<div class="game-time">Time: ${game.time}</div>` : ''}
+              <div class="game-info">Click to view more details</div>
+            </a>
+          `;
           liveScoresDiv.appendChild(gameDiv);
         });
 
-      // Display all games next
+      // Display all other games
       allGamesData
-        .filter(game => leagueFilter === 'all' || game.competition === leagueFilter)
+        .filter(filterGame)
         .forEach(game => {
           const gameDiv = document.createElement('div');
           gameDiv.className = 'game';
           gameDiv.innerHTML = `
-          <a href="${game.match_link}" target="_blank">
-            <div class="league-name">${game.competition}</div>
-            <!-- Add game status -->
-            <div class="game-status">${game.status}</div>
-            <div class="team">
-              <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
-              <span class="team-name">${game.teams[0].name}</span>
-              <span class="team-score">${game.teams[0].score}</span>
-            </div>
-            <div class="team">
-              <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
-              <span class="team-name">${game.teams[1].name}</span>
-              <span class="team-score">${game.teams[1].score}</span>
-            </div>
-            <div class="game-date">${game.date}</div>
-            ${ game.status.toLowerCase() === 'upcoming' ? `<div class="game-time">Time: ${game.time}</div>` : '' }
-            <div class="game-info">Click to view more details</div>
-          </a>
-        `;
+            <a href="${game.match_link}" target="_blank">
+              <div class="league-name">${game.competition}</div>
+              <div class="game-status">${game.status}</div>
+              <div class="team">
+                <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
+                <span class="team-name">${game.teams[0].name}</span>
+                <span class="team-score">${game.teams[0].score}</span>
+              </div>
+              <div class="team">
+                <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
+                <span class="team-name">${game.teams[1].name}</span>
+                <span class="team-score">${game.teams[1].score}</span>
+              </div>
+              <div class="game-date">${game.date}</div>
+              ${game.status.toLowerCase() === 'upcoming' ? `<div class="game-time">Time: ${game.time}</div>` : ''}
+              <div class="game-info">Click to view more details</div>
+            </a>
+          `;
           allGamesDiv.appendChild(gameDiv);
         });
     }
@@ -128,6 +150,7 @@
       displayGames();
     }
 
+    // Initial fetch and periodic updates
     fetchGames();
     setInterval(fetchGames, 15000);
   </script>
