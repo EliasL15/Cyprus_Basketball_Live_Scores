@@ -34,7 +34,7 @@ def fetch_genius_sports_data():
         html_content = match.group(1).replace('\\"', '"').replace('\\/', '/')  # Fix escaped quotes and slashes
         
         soup = BeautifulSoup(html_content, 'html.parser')
-        matches = {"all_games": [], "live_games": []}
+        matches = {"live_games": [], "upcoming": [], "final": []}
 
         for match_item in soup.find_all('li', class_='spls_lsmatch'):
             match_data = {}
@@ -75,8 +75,10 @@ def fetch_genius_sports_data():
             for team in match_data['teams']:
                 team['name'] = team['name'].encode('utf-8').decode('unicode_escape')
 
-            if match_data['status'].lower() == "upcoming" or match_data['status'].lower() == "final":
-                matches["all_games"].append(match_data)
+            if match_data['status'].lower() == "upcoming":
+                matches["upcoming"].append(match_data)
+            elif match_data['status'].lower() == "final":
+                matches["final"].append(match_data)
             else:
                 matches["live_games"].append(match_data)
         return matches

@@ -10,25 +10,36 @@
 </head>
 
 <body>
-  <h1>Choose League</h1>
+  <h1>Filter By:</h1>
   <div class="navbar">
-    <select id="league-filter" onchange="filterGamesByLeague()">
+    <select id="league-filter" onchange="filterGames()">
       <option value="all">All Leagues</option>
-      <option value="keravnos">Keravnos B.C.</option>
     </select>
+    <select id="status-filter" onchange="filterGames()">
+      <option value="all">All Games</option>
+      <option value="live">Live Games</option>
+      <option value="upcoming">Upcoming Games</option>
+      <option value="past">Past Games</option>
+    </select>
+    <button id="keravnos-filter" onclick="toggleKeravnosFilter()" class="keravnos-btn">
+      <img src="https://images.statsengine.playbyplay.api.geniussports.com/d1acab2f5b1ef8289f6d1c9a1fedb6f0T1.png" alt="Keravnos Logo" class="keravnos-logo">
+    </button>
   </div>
-  <h1>Live Games</h1>
+  <h1 id="live-header" style="display: none;">Live Games</h1>
   <div id="live-scores"></div>
-  <h1>All Games From Current Month</h1>
-  <div id="all-games"></div>
+  <h1 id="upcoming-header" style="display: none;">Upcoming Games</h1>
+  <div id="upcoming-scores"></div>
+  <h1 id="past-header" style="display: none;">Past Games</h1>
+  <div id="past-scores"></div>
 
+  <!-- Update the JavaScript section: -->
   <script>
-    let allGamesData = [];
     let liveGamesData = [];
+    let upcomingGamesData = [];
+    let pastGamesData = [];
+    let isKeravnosFilterActive = false;
 
     async function fetchGames() {
-      const liveScoresDiv = document.getElementById('live-scores');
-      const allGamesDiv = document.getElementById('all-games');
       const leagueFilter = document.getElementById('league-filter');
       const selectedLeague = leagueFilter.value;
 
@@ -38,20 +49,19 @@
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        liveGamesData = data.live_games.filter(game => game.status.toLowerCase() === 'live');
-        allGamesData = [...data.live_games.filter(game => game.status.toLowerCase() !== 'live'), ...data.all_games];
+        liveGamesData = data.live_games || [];
+        upcomingGamesData = data.upcoming || [];
+        pastGamesData = data.final || [];
 
-        // Update leagues dropdown while preserving Keravnos men option
+        // Update leagues dropdown
         const leagues = new Set();
-        [...liveGamesData, ...allGamesData].forEach(game => leagues.add(game.competition));
-        
+        [...liveGamesData, ...upcomingGamesData, ...pastGamesData].forEach(game => leagues.add(game.competition));
+
         leagueFilter.innerHTML = `
           <option value="all">All Leagues</option>
-          <option value="keravnos">Keravnos B.C.</option>
           ${Array.from(leagues)
-            .filter(league => league !== 'keravnos')
-            .map(league => `<option value="${league}">${league}</option>`)
-            .join('')}
+              .map(league => `<option value="${league}">${league}</option>`)
+              .join('')}
         `;
         leagueFilter.value = selectedLeague;
         displayGames();
@@ -61,80 +71,102 @@
       }
     }
 
-    function displayGames() {
-      const liveScoresDiv = document.getElementById('live-scores');
-      const allGamesDiv = document.getElementById('all-games');
-      const leagueFilter = document.getElementById('league-filter').value;
-      liveScoresDiv.innerHTML = '';
-      allGamesDiv.innerHTML = '';
-
-      const filterGame = game => {
-        if (leagueFilter === 'all') return true;
-        if (leagueFilter === 'keravnos') {
-          return game.competition === 'Basket League' && 
-                 game.teams.some(team => team.name.includes('ΚΕΡ'));
-        }
-        return game.competition === leagueFilter;
-      };
-
-      // Display live games
-      liveGamesData
-        .filter(filterGame)
-        .forEach(game => {
-          const gameDiv = document.createElement('div');
-          gameDiv.className = 'game';
-          gameDiv.innerHTML = `
-            <a href="${game.match_link}" target="_blank">
-              <div class="league-name">${game.competition}</div>
-              <div class="game-status">${game.status}</div>
-              <div class="team">
-                <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
-                <span class="team-name">${game.teams[0].name}</span>
-                <span class="team-score">${game.teams[0].score}</span>
-              </div>
-              <div class="team">
-                <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
-                <span class="team-name">${game.teams[1].name}</span>
-                <span class="team-score">${game.teams[1].score}</span>
-              </div>
-              <div class="game-date">${game.date}</div>
-              ${game.status.toLowerCase() === 'upcoming' ? `<div class="game-time">Time: ${game.time}</div>` : ''}
-              <div class="game-info">Click to view more details</div>
-            </a>
-          `;
-          liveScoresDiv.appendChild(gameDiv);
-        });
-
-      // Display all other games
-      allGamesData
-        .filter(filterGame)
-        .forEach(game => {
-          const gameDiv = document.createElement('div');
-          gameDiv.className = 'game';
-          gameDiv.innerHTML = `
-            <a href="${game.match_link}" target="_blank">
-              <div class="league-name">${game.competition}</div>
-              <div class="game-status">${game.status}</div>
-              <div class="team">
-                <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
-                <span class="team-name">${game.teams[0].name}</span>
-                <span class="team-score">${game.teams[0].score}</span>
-              </div>
-              <div class="team">
-                <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
-                <span class="team-name">${game.teams[1].name}</span>
-                <span class="team-score">${game.teams[1].score}</span>
-              </div>
-              <div class="game-date">${game.date}</div>
-              ${game.status.toLowerCase() === 'upcoming' ? `<div class="game-time">Time: ${game.time}</div>` : ''}
-              <div class="game-info">Click to view more details</div>
-            </a>
-          `;
-          allGamesDiv.appendChild(gameDiv);
-        });
+    function toggleKeravnosFilter() {
+      isKeravnosFilterActive = !isKeravnosFilterActive;
+      document.getElementById('keravnos-filter').classList.toggle('active');
+      
+      // Toggle visibility of filter dropdowns
+      const leagueFilter = document.getElementById('league-filter');
+      const statusFilter = document.getElementById('status-filter');
+      
+      if (isKeravnosFilterActive) {
+        leagueFilter.style.display = 'none';
+        statusFilter.style.display = 'none';
+      } else {
+        leagueFilter.style.display = 'block';
+        statusFilter.style.display = 'block';
+      }
+      
+      displayGames();
     }
 
-    function filterGamesByLeague() {
+    function displayGames() {
+      const liveScoresDiv = document.getElementById('live-scores');
+      const upcomingScoresDiv = document.getElementById('upcoming-scores');
+      const pastScoresDiv = document.getElementById('past-scores');
+      const leagueFilter = document.getElementById('league-filter').value;
+      const statusFilter = document.getElementById('status-filter').value;
+
+      // Clear all sections
+      liveScoresDiv.innerHTML = '';
+      upcomingScoresDiv.innerHTML = '';
+      pastScoresDiv.innerHTML = '';
+
+      const filterGame = game => {
+        // League filter
+        let leagueMatch = leagueFilter === 'all' ? true : game.competition === leagueFilter;
+        
+        // Keravnos filter
+        if (isKeravnosFilterActive) {
+          leagueMatch = game.competition === 'Basket League' && game.teams.some(team => team.name.includes('ΚΕΡ'));
+        }
+
+        // Status filter
+        const statusMatch = statusFilter === 'all' ? true :
+          statusFilter === 'live' ? game.status.toLowerCase() !== 'upcoming' && game.status.toLowerCase() !== 'final' :
+          statusFilter === 'upcoming' ? game.status.toLowerCase() === 'upcoming' :
+          statusFilter === 'past' ? game.status.toLowerCase() === 'final' : false;
+
+        return leagueMatch && statusMatch;
+      };
+
+      // Filter games for each section
+      const filteredLiveGames = liveGamesData.filter(filterGame);
+      const filteredUpcomingGames = upcomingGamesData.filter(filterGame);
+      const filteredPastGames = pastGamesData.filter(filterGame);
+
+      // Show/hide headers based on content
+      document.getElementById('live-header').style.display = filteredLiveGames.length > 0 ? 'block' : 'none';
+      document.getElementById('upcoming-header').style.display = filteredUpcomingGames.length > 0 ? 'block' : 'none';
+      document.getElementById('past-header').style.display = filteredPastGames.length > 0 ? 'block' : 'none';
+
+      // Display games in each section
+      const renderGame = (game) => `
+      <div class="game">
+        <a href="${game.match_link}" target="_blank">
+          <div class="league-name">${game.competition}</div>
+          <div class="game-status">${game.status}</div>
+          <div class="team">
+            <img src="${game.teams[0].logo}" alt="${game.teams[0].name}" class="team-logo" />
+            <span class="team-name">${game.teams[0].name}</span>
+            <span class="team-score">${game.teams[0].score}</span>
+          </div>
+          <div class="team">
+            <img src="${game.teams[1].logo}" alt="${game.teams[1].name}" class="team-logo" />
+            <span class="team-name">${game.teams[1].name}</span>
+            <span class="team-score">${game.teams[1].score}</span>
+          </div>
+          <div class="game-date">${game.date}</div>
+          ${game.status.toLowerCase() === 'upcoming' ? `<div class="game-time">Time: ${game.time}</div>` : ''}
+          <div class="game-info">Click to view more details</div>
+        </a>
+      </div>
+    `;
+
+      filteredLiveGames.forEach(game => {
+        liveScoresDiv.insertAdjacentHTML('beforeend', renderGame(game));
+      });
+
+      filteredUpcomingGames.forEach(game => {
+        upcomingScoresDiv.insertAdjacentHTML('beforeend', renderGame(game));
+      });
+
+      filteredPastGames.forEach(game => {
+        pastScoresDiv.insertAdjacentHTML('beforeend', renderGame(game));
+      });
+    }
+
+    function filterGames() {
       displayGames();
     }
 
