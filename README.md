@@ -9,3 +9,6 @@ This project is a Flask-based web application designed to scrape and display liv
 - Automatically updates the scores every 15 seconds.
 - Provides links to detailed game statistics.
 
+## Access the Web App
+
+Visit **[liassides.me/basket](https://liassides.me/basket)** to access the live scores.
